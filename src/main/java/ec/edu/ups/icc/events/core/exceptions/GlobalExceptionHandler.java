@@ -1,13 +1,14 @@
 package ec.edu.ups.icc.events.core.exceptions;
 
-import ec.edu.ups.icc.events.core.dtos.ApiResponse;
+import ec.edu.ups.icc.events.core.dtos.ApiErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,8 +16,9 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
-            MethodArgumentNotValidException exception
+    public ResponseEntity<ApiErrorResponse> handleValidationException(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
     ) {
         Map<String, String> errors = new LinkedHashMap<>();
 
@@ -29,94 +31,150 @@ public class GlobalExceptionHandler {
                                 : "Valor inválido"
                 ));
 
-        ApiResponse<Map<String, String>> response = new ApiResponse<>(
-                false,
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "VALIDATION_ERROR",
                 "La solicitud contiene campos inválidos",
-                errors,
-                LocalDateTime.now()
+                request,
+                errors
         );
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(
-            ResourceNotFoundException exception
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
+            ResourceNotFoundException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.NOT_FOUND,
-                exception.getMessage()
+                "RESOURCE_NOT_FOUND",
+                exception.getMessage(),
+                request
         );
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadRequest(
-            BadRequestException exception
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(
+            BadRequestException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.BAD_REQUEST,
-                exception.getMessage()
+                "BAD_REQUEST",
+                exception.getMessage(),
+                request
         );
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(
-            UnauthorizedException exception
+    public ResponseEntity<ApiErrorResponse> handleUnauthorized(
+            UnauthorizedException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.UNAUTHORIZED,
-                exception.getMessage()
+                "UNAUTHORIZED",
+                exception.getMessage(),
+                request
         );
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ApiResponse<Void>> handleForbidden(
-            ForbiddenException exception
+    public ResponseEntity<ApiErrorResponse> handleForbidden(
+            ForbiddenException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.FORBIDDEN,
-                exception.getMessage()
+                "FORBIDDEN",
+                exception.getMessage(),
+                request
         );
     }
 
     @ExceptionHandler(BusinessRuleException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessRule(
-            BusinessRuleException exception
+    public ResponseEntity<ApiErrorResponse> handleBusinessRule(
+            BusinessRuleException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.CONFLICT,
-                exception.getMessage()
+                "BUSINESS_RULE_VIOLATION",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                "DUPLICATE_RESOURCE",
+                "El registro ya existe o incumple una restricción de datos",
+                request
         );
     }
 
     @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(
-            RateLimitExceededException exception
+    public ResponseEntity<ApiErrorResponse> handleRateLimitExceeded(
+            RateLimitExceededException exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.TOO_MANY_REQUESTS,
-                exception.getMessage()
+                "RATE_LIMIT_EXCEEDED",
+                exception.getMessage(),
+                request
         );
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnexpectedException(
-            Exception exception
+    public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
+            Exception exception,
+            HttpServletRequest request
     ) {
-        return buildErrorResponse(
+        return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Ocurrió un error interno inesperado"
+                "INTERNAL_SERVER_ERROR",
+                "Ocurrió un error interno inesperado",
+                request
         );
     }
 
-    private ResponseEntity<ApiResponse<Void>> buildErrorResponse(
+    private ResponseEntity<ApiErrorResponse> buildResponse(
             HttpStatus status,
-            String message
+            String code,
+            String message,
+            HttpServletRequest request
     ) {
-        return ResponseEntity
-                .status(status)
-                .body(ApiResponse.error(message));
+        ApiErrorResponse response = ApiErrorResponse.of(
+                status.value(),
+                code,
+                message,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildResponse(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request,
+            Map<String, String> errors
+    ) {
+        ApiErrorResponse response = ApiErrorResponse.of(
+                status.value(),
+                code,
+                message,
+                request.getRequestURI(),
+                errors
+        );
+
+        return ResponseEntity.status(status).body(response);
     }
 }
