@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,25 +18,67 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService(
+            UserRepository userRepository
+    ) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+    public UserDetails loadUserByUsername(
+            String email
+    ) throws UsernameNotFoundException {
 
-        Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+        String normalizedEmail = email == null
+                ? ""
+                : email.trim();
+
+        UserEntity user = userRepository
+                .findByEmail(normalizedEmail)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                "Usuario no encontrado: "
+                                        + normalizedEmail
+                        )
+                );
+
+        Set<GrantedAuthority> authorities = user.getRoles()
+                .stream()
+                .map(role -> role.getName())
+                .filter(roleName ->
+                        roleName != null && !roleName.isBlank()
+                )
+                .map(roleName ->
+                        roleName.trim().toUpperCase(Locale.ROOT)
+                )
+                .map(roleName ->
+                        roleName.startsWith("ROLE_")
+                                ? roleName
+                                : "ROLE_" + roleName
+                )
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
 
-        return org.springframework.security.core.userdetails.User.builder()
+        if (authorities.isEmpty()) {
+            throw new UsernameNotFoundException(
+                    "El usuario no tiene roles asignados: "
+                            + normalizedEmail
+            );
+        }
+
+        return org.springframework.security.core.userdetails.User
+                .builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
                 .authorities(authorities)
-                .accountLocked(user.getAccountLocked())
-                .disabled(!user.getEnabled())
+                .accountLocked(
+                        Boolean.TRUE.equals(
+                                user.getAccountLocked()
+                        )
+                )
+                .disabled(
+                        !Boolean.TRUE.equals(user.getEnabled())
+                )
                 .build();
     }
 }
