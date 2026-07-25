@@ -2,6 +2,7 @@ package ec.edu.ups.icc.events.events.services;
 
 import ec.edu.ups.icc.events.categories.entities.CategoryEntity;
 import ec.edu.ups.icc.events.categories.repositories.CategoryRepository;
+import ec.edu.ups.icc.events.core.exceptions.ForbiddenException;
 import ec.edu.ups.icc.events.core.exceptions.ResourceNotFoundException;
 import ec.edu.ups.icc.events.core.exceptions.UnauthorizedException;
 import ec.edu.ups.icc.events.events.dtos.EventDTO;
@@ -34,8 +35,8 @@ public class EventService {
     private final UserRepository userRepository;
 
     public EventService(EventRepository eventRepository,
-                        CategoryRepository categoryRepository,
-                        UserRepository userRepository) {
+            CategoryRepository categoryRepository,
+            UserRepository userRepository) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
@@ -73,31 +74,35 @@ public class EventService {
 
     public EventDTO updateEvent(Long id, EventDTO dto) {
         EventEntity event = findEventById(id);
-        return updateEventWithOwnership(event, dto);
-    }
+        verifyOwnership(event);
 
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('ORGANIZER') and #event.organizer.id == authentication.principal.id)")
-    public EventDTO updateEventWithOwnership(EventEntity event, EventDTO dto) {
-        if (dto.title() != null) event.setTitle(dto.title());
-        if (dto.description() != null) event.setDescription(dto.description());
-        if (dto.modality() != null) event.setModality(dto.modality());
-        if (dto.location() != null) event.setLocation(dto.location());
-        if (dto.capacity() != null) event.setCapacity(dto.capacity());
-        if (dto.availableSeats() != null) event.setAvailableSeats(dto.availableSeats());
-        if (dto.startDate() != null) event.setStartDate(dto.startDate());
-        if (dto.endDate() != null) event.setEndDate(dto.endDate());
-        if (dto.status() != null) event.setStatus(dto.status());
-        if (dto.categoryId() != null) event.setCategory(findCategory(dto.categoryId()));
+        if (dto.title() != null)
+            event.setTitle(dto.title());
+        if (dto.description() != null)
+            event.setDescription(dto.description());
+        if (dto.modality() != null)
+            event.setModality(dto.modality());
+        if (dto.location() != null)
+            event.setLocation(dto.location());
+        if (dto.capacity() != null)
+            event.setCapacity(dto.capacity());
+        if (dto.availableSeats() != null)
+            event.setAvailableSeats(dto.availableSeats());
+        if (dto.startDate() != null)
+            event.setStartDate(dto.startDate());
+        if (dto.endDate() != null)
+            event.setEndDate(dto.endDate());
+        if (dto.status() != null)
+            event.setStatus(dto.status());
+        if (dto.categoryId() != null)
+            event.setCategory(findCategory(dto.categoryId()));
+
         return toDto(eventRepository.save(event));
     }
 
     public void deleteEvent(Long id) {
         EventEntity event = findEventById(id);
-        deleteEventWithOwnership(event);
-    }
-
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('ORGANIZER') and #event.organizer.id == authentication.principal.id)")
-    public void deleteEventWithOwnership(EventEntity event) {
+        verifyOwnership(event);
         eventRepository.delete(event);
     }
 
@@ -118,6 +123,23 @@ public class EventService {
                 .orElseThrow(() -> new UnauthorizedException("Usuario no encontrado en el sistema"));
     }
 
+    private void verifyOwnership(EventEntity event) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email;
+        if (principal instanceof org.springframework.security.core.userdetails.User userDetails) {
+            email = userDetails.getUsername();
+        } else {
+            throw new UnauthorizedException("Usuario no autenticado");
+        }
+
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !event.getOrganizer().getEmail().equals(email)) {
+            throw new ForbiddenException("No tienes permisos para modificar o eliminar este evento");
+        }
+    }
+
     private CategoryEntity findCategory(Long id) {
         return Optional.ofNullable(id)
                 .flatMap(categoryRepository::findById)
@@ -134,29 +156,23 @@ public class EventService {
                         builder.or(
                                 builder.like(builder.lower(root.get("title")), pattern),
                                 builder.like(builder.lower(root.get("description")), pattern),
-                                builder.like(builder.lower(root.get("location")), pattern)
-                        )
-                );
+                                builder.like(builder.lower(root.get("location")), pattern)));
             }
             if (filter.categoryId() != null) {
                 predicates = builder.and(predicates,
-                        builder.equal(root.get("category").get("id"), filter.categoryId())
-                );
+                        builder.equal(root.get("category").get("id"), filter.categoryId()));
             }
             if (filter.modality() != null) {
                 predicates = builder.and(predicates,
-                        builder.equal(root.get("modality"), filter.modality())
-                );
+                        builder.equal(root.get("modality"), filter.modality()));
             }
             if (filter.startDate() != null) {
                 predicates = builder.and(predicates,
-                        builder.greaterThanOrEqualTo(root.get("startDate"), filter.startDate())
-                );
+                        builder.greaterThanOrEqualTo(root.get("startDate"), filter.startDate()));
             }
             if (filter.endDate() != null) {
                 predicates = builder.and(predicates,
-                        builder.lessThanOrEqualTo(root.get("endDate"), filter.endDate())
-                );
+                        builder.lessThanOrEqualTo(root.get("endDate"), filter.endDate()));
             }
             return predicates;
         };
@@ -175,7 +191,6 @@ public class EventService {
                 event.getEndDate(),
                 event.getStatus(),
                 event.getOrganizer() != null ? event.getOrganizer().getId() : null,
-                event.getCategory() != null ? event.getCategory().getId() : null
-        );
+                event.getCategory() != null ? event.getCategory().getId() : null);
     }
 }
