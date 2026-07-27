@@ -20,7 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import ec.edu.ups.icc.events.audit.annotations.Auditable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +56,11 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
 
+    @Auditable(
+        action = "CREATE_EVENT",
+        failureAction = "CREATE_EVENT_FAILED",
+        resourceName = "EVENT"
+    )
     public EventDTO createEvent(EventDTO dto) {
         EventEntity event = new EventEntity();
         event.setTitle(dto.title());
@@ -69,8 +74,11 @@ public class EventService {
         event.setStatus(dto.status());
         event.setCategory(findCategory(dto.categoryId()));
         event.setOrganizer(findCurrentUser());
+
         return toDto(eventRepository.save(event));
     }
+
+
 
     public EventDTO updateEvent(Long id, EventDTO dto) {
         EventEntity event = findEventById(id);

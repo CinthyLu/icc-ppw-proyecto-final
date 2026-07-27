@@ -99,6 +99,7 @@ CREATE TABLE audit_logs (
     resource_name VARCHAR(100),
     resource_id VARCHAR(50),
     ip_address VARCHAR(45),
+    user_agent VARCHAR(500),
     details TEXT,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

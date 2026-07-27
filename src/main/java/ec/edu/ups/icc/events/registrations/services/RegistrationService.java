@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import ec.edu.ups.icc.events.audit.annotations.Auditable;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -39,54 +39,100 @@ public class RegistrationService {
         this.userRepository = userRepository;
     }
 
-    public RegistrationDTO registerUserToEvent(Long eventId) {
-        UserEntity user = findCurrentUser();
-        EventEntity event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + eventId));
+@Auditable(
+        action = "REGISTER_EVENT",
+        failureAction = "REGISTER_EVENT_FAILED",
+        resourceName = "EVENT",
+        resourceIdArg = 0,
+        captureResultId = false
+)
+public RegistrationDTO registerUserToEvent(Long eventId) {
+    UserEntity user = findCurrentUser();
 
-        if (event.getStatus() != EventStatus.PUBLISHED) {
-            throw new BusinessRuleException("No se permiten inscripciones en eventos que no estén publicados");
-        }
+    EventEntity event = eventRepository.findById(eventId)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "Evento no encontrado con id: " + eventId
+                    )
+            );
 
-        if (LocalDateTime.now().isAfter(event.getStartDate())) {
-            throw new BusinessRuleException("No se permiten inscripciones en eventos que ya hayan iniciado o finalizado");
-        }
+    if (event.getStatus() != EventStatus.PUBLISHED) {
+        throw new BusinessRuleException(
+                "No se permiten inscripciones en eventos que no estén publicados"
+        );
+    }
 
-        Optional<RegistrationEntity> existingOpt = registrationRepository.findByUserIdAndEventId(user.getId(), event.getId());
+    if (LocalDateTime.now().isAfter(event.getStartDate())) {
+        throw new BusinessRuleException(
+                "No se permiten inscripciones en eventos que ya hayan iniciado o finalizado"
+        );
+    }
 
-        if (existingOpt.isPresent()) {
-            RegistrationEntity existing = existingOpt.get();
-            if (existing.getStatus() == RegistrationStatus.CONFIRMED) {
-                throw new BusinessRuleException("El usuario ya se encuentra inscrito de forma activa en este evento");
-            } else {
-                // Reactivación
-                if (event.getAvailableSeats() <= 0) {
-                    throw new BusinessRuleException("No hay cupos disponibles");
-                }
-                event.setAvailableSeats(event.getAvailableSeats() - 1);
-                eventRepository.save(event);
+    Optional<RegistrationEntity> existingOpt =
+            registrationRepository.findByUserIdAndEventId(
+                    user.getId(),
+                    event.getId()
+            );
 
-                existing.setStatus(RegistrationStatus.CONFIRMED);
-                existing.setRegistrationDate(LocalDateTime.now());
-                return toDto(registrationRepository.save(existing));
-            }
+    if (existingOpt.isPresent()) {
+        RegistrationEntity existing = existingOpt.get();
+
+        if (existing.getStatus() == RegistrationStatus.CONFIRMED) {
+            throw new BusinessRuleException(
+                    "El usuario ya se encuentra inscrito de forma activa en este evento"
+            );
         }
 
         if (event.getAvailableSeats() <= 0) {
-            throw new BusinessRuleException("No hay cupos disponibles");
+            throw new BusinessRuleException(
+                    "No hay cupos disponibles"
+            );
         }
 
-        event.setAvailableSeats(event.getAvailableSeats() - 1);
+        event.setAvailableSeats(
+                event.getAvailableSeats() - 1
+        );
         eventRepository.save(event);
 
-        RegistrationEntity registration = new RegistrationEntity();
-        registration.setUser(user);
-        registration.setEvent(event);
-        registration.setStatus(RegistrationStatus.CONFIRMED);
-        registration.setRegistrationDate(LocalDateTime.now());
+        existing.setStatus(
+                RegistrationStatus.CONFIRMED
+        );
+        existing.setRegistrationDate(
+                LocalDateTime.now()
+        );
 
-        return toDto(registrationRepository.save(registration));
+        return toDto(
+                registrationRepository.save(existing)
+        );
     }
+
+    if (event.getAvailableSeats() <= 0) {
+        throw new BusinessRuleException(
+                "No hay cupos disponibles"
+        );
+    }
+
+    event.setAvailableSeats(
+            event.getAvailableSeats() - 1
+    );
+    eventRepository.save(event);
+
+    RegistrationEntity registration =
+            new RegistrationEntity();
+
+    registration.setUser(user);
+    registration.setEvent(event);
+    registration.setStatus(
+            RegistrationStatus.CONFIRMED
+    );
+    registration.setRegistrationDate(
+            LocalDateTime.now()
+    );
+
+    return toDto(
+            registrationRepository.save(registration)
+    );
+}
 
     public RegistrationDTO cancelRegistration(Long id) {
         UserEntity currentUser = findCurrentUser();
