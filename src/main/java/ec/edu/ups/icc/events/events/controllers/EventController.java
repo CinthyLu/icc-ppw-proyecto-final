@@ -28,7 +28,9 @@ public class EventController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "startDate") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir
     ) {
         EventFilterDTO filter = new EventFilterDTO(
                 text,
@@ -37,7 +39,7 @@ public class EventController {
                 startDate != null ? java.time.LocalDateTime.parse(startDate) : null,
                 endDate != null ? java.time.LocalDateTime.parse(endDate) : null
         );
-        return ResponseEntity.ok(eventService.searchEvents(filter, page, size));
+        return ResponseEntity.ok(eventService.searchEvents(filter, page, size, sortBy, sortDir));
     }
 
     @GetMapping("/{id}")

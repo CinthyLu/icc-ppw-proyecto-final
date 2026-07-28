@@ -8,6 +8,7 @@ import ec.edu.ups.icc.events.core.exceptions.UnauthorizedException;
 import ec.edu.ups.icc.events.events.dtos.EventDTO;
 import ec.edu.ups.icc.events.events.dtos.EventFilterDTO;
 import ec.edu.ups.icc.events.events.entities.EventEntity;
+import ec.edu.ups.icc.events.events.entities.EventStatus;
 import ec.edu.ups.icc.events.events.repositories.EventRepository;
 import ec.edu.ups.icc.events.users.entities.UserEntity;
 import ec.edu.ups.icc.events.users.repositories.UserRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,8 +44,9 @@ public class EventService {
         this.userRepository = userRepository;
     }
 
-    public Page<EventDTO> searchEvents(EventFilterDTO filter, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<EventDTO> searchEvents(EventFilterDTO filter, int page, int size, String sortBy, String sortDir) {
+        Sort sort = Sort.by(resolveSortDirection(sortDir), resolveSortProperty(sortBy));
+        Pageable pageable = PageRequest.of(page, size, sort);
         Specification<EventEntity> spec = buildSpecification(filter);
         Page<EventEntity> results = eventRepository.findAll(spec, pageable);
         List<EventDTO> content = results.stream().map(this::toDto).collect(Collectors.toList());
@@ -111,7 +114,8 @@ public class EventService {
     public void deleteEvent(Long id) {
         EventEntity event = findEventById(id);
         verifyOwnership(event);
-        eventRepository.delete(event);
+        event.setStatus(EventStatus.CANCELLED);
+        eventRepository.save(event);
     }
 
     private EventEntity findEventById(Long id) {
@@ -158,6 +162,8 @@ public class EventService {
         return (root, query, builder) -> {
             var predicates = builder.conjunction();
 
+            predicates = builder.and(predicates, builder.notEqual(root.get("status"), EventStatus.CANCELLED));
+
             if (filter.text() != null && !filter.text().isBlank()) {
                 String pattern = "%" + filter.text().toLowerCase() + "%";
                 predicates = builder.and(predicates,
@@ -183,6 +189,20 @@ public class EventService {
                         builder.lessThanOrEqualTo(root.get("endDate"), filter.endDate()));
             }
             return predicates;
+        };
+    }
+
+    private Sort.Direction resolveSortDirection(String sortDir) {
+        return "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    }
+
+    private String resolveSortProperty(String sortBy) {
+        return switch (sortBy != null ? sortBy.toLowerCase() : "") {
+            case "title" -> "title";
+            case "startdate" -> "startDate";
+            case "enddate" -> "endDate";
+            case "createdat" -> "createdAt";
+            default -> "startDate";
         };
     }
 

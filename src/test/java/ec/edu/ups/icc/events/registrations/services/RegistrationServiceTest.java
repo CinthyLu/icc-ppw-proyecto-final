@@ -177,7 +177,7 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    public void registerUserToEvent_Reactivation() {
+    public void registerUserToEvent_AlreadyRegistered() {
         mockSecurityContext("student@ups.edu.ec");
 
         RegistrationEntity existingRegistration = new RegistrationEntity();
@@ -189,15 +189,27 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
         when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
         when(registrationRepository.findByUserIdAndEventId(1L, 10L)).thenReturn(Optional.of(existingRegistration));
-        when(registrationRepository.save(existingRegistration)).thenReturn(existingRegistration);
 
-        RegistrationDTO result = registrationService.registerUserToEvent(10L);
+        assertThrows(BusinessRuleException.class, () -> {
+            registrationService.registerUserToEvent(10L);
+        });
 
-        assertNotNull(result);
-        assertEquals(RegistrationStatus.CONFIRMED, result.status());
-        assertEquals(9, eventEntity.getAvailableSeats());
-        verify(eventRepository, times(1)).save(eventEntity);
-        verify(registrationRepository, times(1)).save(existingRegistration);
+        verify(eventRepository, never()).save(any(EventEntity.class));
+        verify(registrationRepository, never()).save(any(RegistrationEntity.class));
+    }
+
+    @Test
+    public void registerUserToEvent_EventFinishedByEndDate() {
+        mockSecurityContext("student@ups.edu.ec");
+        eventEntity.setEndDate(LocalDateTime.now().minusDays(1));
+        eventEntity.setStartDate(LocalDateTime.now().plusDays(1));
+
+        when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
+        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+
+        assertThrows(BusinessRuleException.class, () -> {
+            registrationService.registerUserToEvent(10L);
+        });
     }
 
     @Test

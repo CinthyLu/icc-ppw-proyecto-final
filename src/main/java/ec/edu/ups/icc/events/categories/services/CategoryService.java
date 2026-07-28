@@ -3,11 +3,14 @@ package ec.edu.ups.icc.events.categories.services;
 import ec.edu.ups.icc.events.categories.dtos.CategoryDTO;
 import ec.edu.ups.icc.events.categories.entities.CategoryEntity;
 import ec.edu.ups.icc.events.categories.repositories.CategoryRepository;
+import ec.edu.ups.icc.events.core.exceptions.BadRequestException;
+import ec.edu.ups.icc.events.core.exceptions.BusinessRuleException;
 import ec.edu.ups.icc.events.core.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,13 +37,16 @@ public class CategoryService {
 
     public CategoryDTO createCategory(CategoryDTO dto) {
         if (dto.name() == null || dto.name().isBlank()) {
-            throw new IllegalArgumentException("El nombre de la categoría es obligatorio");
+            throw new BadRequestException("El nombre de la categoría es obligatorio");
         }
-        if (categoryRepository.existsByNameIgnoreCase(dto.name())) {
-            throw new IllegalArgumentException("La categoría ya existe");
+
+        String normalizedName = dto.name().trim().toLowerCase(Locale.ROOT);
+        if (categoryRepository.existsByNameIgnoreCase(normalizedName)) {
+            throw new BusinessRuleException("La categoría ya existe");
         }
+
         CategoryEntity category = new CategoryEntity();
-        category.setName(dto.name());
+        category.setName(normalizedName);
         category.setDescription(dto.description());
         return toDto(categoryRepository.save(category));
     }
@@ -50,7 +56,11 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + id));
 
         if (dto.name() != null && !dto.name().isBlank()) {
-            category.setName(dto.name());
+            String normalizedName = dto.name().trim().toLowerCase(Locale.ROOT);
+            if (categoryRepository.existsByNameIgnoreCaseAndIdNot(normalizedName, id)) {
+                throw new BusinessRuleException("La categoría ya existe");
+            }
+            category.setName(normalizedName);
         }
         category.setDescription(dto.description());
         return toDto(categoryRepository.save(category));

@@ -19,9 +19,13 @@ public class RegistrationController {
     @GetMapping
     public ResponseEntity<Page<RegistrationDTO>> getRegistrations(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long eventId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "registrationDate") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDir
     ) {
-        return ResponseEntity.ok(registrationService.getRegistrations(page, size));
+        return ResponseEntity.ok(registrationService.getRegistrations(page, size, eventId, status, sortBy, sortDir));
     }
 
     @PostMapping("/events/{eventId}")

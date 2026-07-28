@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -45,15 +46,16 @@ public class AuthController {
     public ResponseEntity<?> register(
             @RequestBody RegisterRequest request
     ) {
-        if (userRepository.existsByEmail(request.getUsername())) {
+        String normalizedEmail = request.getUsername().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmail(normalizedEmail)) {
             return ResponseEntity
                     .badRequest()
                     .body("El correo ya está registrado");
         }
 
         UserEntity user = new UserEntity();
-        user.setName(request.getUsername());
-        user.setEmail(request.getUsername());
+        user.setName(normalizedEmail);
+        user.setEmail(normalizedEmail);
         user.setPassword(
                 passwordEncoder.encode(request.getPassword())
         );
