@@ -15,8 +15,12 @@ spring:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgrespassword}
     driver-class-name: org.postgresql.Driver
+#hackiari 5 conexiones 
+    hikari:
+    maximum-pool-size: ${DB_POOL_SIZE:5}
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate 
     show-sql: true

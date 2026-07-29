@@ -6,14 +6,14 @@ services:
     container_name: academic_events_db_container
     environment:
       POSTGRES_DB: academic_events_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: adminadmin123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d academic_events_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres_user -d academic_events_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -31,8 +31,35 @@ services:
       timeout: 5s
       retries: 5
 
+
+
+  app:
+    build: .
+    container_name: academic_events_api_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: academic_events_db
+      DB_USER: postgres_user
+      DB_PASSWORD: adminadmin123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080"
+      SWAGGER_USERNAME: admin
+      SWAGGER_PASSWORD: adminpassword
+      SPRING_PROFILES_ACTIVE: prod
+
+
 volumes:
   postgres_data:
   redis_data:
-
 

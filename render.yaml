@@ -1,0 +1,60 @@
+services:
+  # Base de datos relacional PostgreSQL
+  - type: database
+    name: academic-events-db
+    databaseName: academic_events_db
+    user: postgres_user
+    plan: free
+
+  # Caché distribuida Redis
+  - type: redis
+    name: academic-events-redis
+    plan: free
+    ipAllowList: [] 
+
+  # Servicio Web de la API Spring Boot
+  - type: web
+    name: academic-events-api
+    env: docker
+    plan: free
+    healthCheckPath: /api/actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: academic-events-db
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: academic_events_db
+      - key: DB_USER
+        fromDatabase:
+          name: academic-events-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: academic-events-db
+          property: password
+      - key: REDIS_HOST
+        fromStack:
+          type: redis
+          name: academic-events-redis
+          property: host
+      - key: REDIS_PORT
+        fromStack:
+          type: redis
+          name: academic-events-redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: SWAGGER_USERNAME
+        value: admin
+      - key: SWAGGER_PASSWORD
+        value: adminpassword
+      # Configuración de memoria de la JVM
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=75.0 -Duser.timezone=America/Guayaquil"
