@@ -4,14 +4,30 @@ import ec.edu.ups.icc.events.registrations.entities.RegistrationStatus;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Respuesta detallada de una inscripción")
 public class RegistrationResponseDto {
 
+    @Schema(description = "ID único de la inscripción", example = "50")
     private Long id;
+
+    @Schema(description = "ID del usuario inscrito", example = "1")
     private Long userId;
+
+    @Schema(description = "Correo del usuario inscrito", example = "student@ups.edu.ec")
     private String userEmail;
+
+    @Schema(description = "ID del evento", example = "10")
     private Long eventId;
+
+    @Schema(description = "Título del evento", example = "Congreso de Ingeniería de Software 2026")
     private String eventTitle;
+
+    @Schema(description = "Fecha y hora en la que se realizó la inscripción", example = "2026-08-01T14:32:00Z")
     private LocalDateTime registrationDate;
+
+    @Schema(description = "Estado de la inscripción (CONFIRMED, CANCELLED)", example = "CONFIRMED")
     private RegistrationStatus status;
 
     public RegistrationResponseDto() {

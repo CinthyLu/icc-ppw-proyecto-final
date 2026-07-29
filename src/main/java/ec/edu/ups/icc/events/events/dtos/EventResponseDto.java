@@ -5,19 +5,45 @@ import ec.edu.ups.icc.events.events.entities.EventStatus;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Respuesta detallada de un evento académico")
 public class EventResponseDto {
 
+    @Schema(description = "ID único del evento", example = "10")
     private Long id;
+
+    @Schema(description = "Título del evento", example = "Congreso de Ciencias de la Computación 2026")
     private String title;
+
+    @Schema(description = "Descripción detallada del evento", example = "Un espacio de divulgación y conferencias sobre avances tecnológicos.")
     private String description;
+
+    @Schema(description = "Modalidad del evento (PRESENTIAL, VIRTUAL, HYBRID)", example = "PRESENTIAL")
     private EventModality modality;
+
+    @Schema(description = "Lugar o dirección física", example = "Auditorio Generalups, Campus Girón")
     private String location;
+
+    @Schema(description = "Capacidad máxima de asistentes", example = "150")
     private Integer capacity;
+
+    @Schema(description = "Asientos o cupos disponibles actualmente", example = "142")
     private Integer availableSeats;
+
+    @Schema(description = "Fecha y hora de inicio del evento", example = "2026-09-20T08:00:00Z")
     private LocalDateTime startDate;
+
+    @Schema(description = "Fecha y hora de finalización del evento", example = "2026-09-22T17:00:00Z")
     private LocalDateTime endDate;
+
+    @Schema(description = "Estado actual del evento (DRAFT, PUBLISHED, CANCELLED)", example = "PUBLISHED")
     private EventStatus status;
+
+    @Schema(description = "ID del usuario organizador del evento", example = "3")
     private Long organizerId;
+
+    @Schema(description = "ID de la categoría del evento", example = "2")
     private Long categoryId;
 
     public EventResponseDto() {

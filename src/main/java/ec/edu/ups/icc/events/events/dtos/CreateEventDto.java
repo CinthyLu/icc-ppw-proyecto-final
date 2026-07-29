@@ -8,30 +8,41 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO para la creación de un evento académico")
 public class CreateEventDto {
 
+    @Schema(description = "Título del evento", example = "Congreso de Ciencias de la Computación 2026", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El título es obligatorio")
     @Size(min = 3, max = 200, message = "El título debe tener entre 3 y 200 caracteres")
     private String title;
 
+    @Schema(description = "Descripción detallada del evento", example = "Un espacio de divulgación y conferencias sobre avances tecnológicos.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "La descripción es obligatoria")
     private String description;
 
+    @Schema(description = "Modalidad del evento (PRESENTIAL, VIRTUAL, HYBRID)", example = "PRESENTIAL", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "La modalidad es obligatoria")
     private EventModality modality;
 
+    @Schema(description = "Lugar o dirección física (obligatorio si es presencial o híbrido)", example = "Auditorio Generalups, Campus Girón")
     private String location;
 
+    @Schema(description = "Capacidad máxima de asistentes", example = "150", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "La capacidad es obligatoria")
     @Min(value = 1, message = "La capacidad debe ser al menos de 1 participante")
     private Integer capacity;
 
+    @Schema(description = "Fecha y hora de inicio del evento", example = "2026-09-20T08:00:00Z", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDateTime startDate;
 
+    @Schema(description = "Fecha y hora de finalización del evento", example = "2026-09-22T17:00:00Z", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "La fecha de finalización es obligatoria")
     private LocalDateTime endDate;
 
+    @Schema(description = "ID de la categoría del evento", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "La categoría es obligatoria")
     private Long categoryId;
 

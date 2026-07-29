@@ -10,8 +10,13 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Autenticación", description = "Endpoints para registro, login, refresh token y logout de usuarios")
 public class AuthController {
 
     private final AuthService authService;
@@ -21,6 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Registrar un nuevo participante", description = "Permite registrar un nuevo usuario con rol de PARTICIPANTE (público).")
     public ResponseEntity<AuthResponseDto> register(
             @Valid @RequestBody RegisterRequestDto request
     ) {
@@ -35,6 +41,7 @@ public class AuthController {
             resourceName = "AUTHENTICATION",
             captureResultId = false
     )
+    @Operation(summary = "Iniciar sesión", description = "Autentica al usuario devolviendo un Token JWT de acceso y un Refresh Token. (Bloqueo temporal tras 5 fallos).")
     public ResponseEntity<AuthResponseDto> login(
             @Valid @RequestBody LoginRequestDto request,
             HttpServletRequest httpServletRequest
@@ -45,6 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refrescar Access Token", description = "Genera un nuevo par de Access Token y Refresh Token a partir de un Refresh Token válido.")
     public ResponseEntity<AuthResponseDto> refresh(
             @RequestHeader("Authorization") String authHeader
     ) {
@@ -53,6 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Cerrar sesión", description = "Invalida el Access Token actual agregándolo a una lista negra en Redis.", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> logout(
             @RequestHeader("Authorization") String authHeader
     ) {
