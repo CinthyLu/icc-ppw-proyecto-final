@@ -1,4 +1,4 @@
-package ec.edu.ups.icc.events.core.security;
+package ec.edu.ups.icc.events.security.services;
 
 import org.springframework.stereotype.Service;
 
@@ -8,7 +8,6 @@ import java.util.function.Function;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
 
 @Service
 public class JwtService {

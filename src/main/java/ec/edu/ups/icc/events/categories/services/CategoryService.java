@@ -1,79 +1,18 @@
 package ec.edu.ups.icc.events.categories.services;
 
-import ec.edu.ups.icc.events.categories.dtos.CategoryDTO;
-import ec.edu.ups.icc.events.categories.entities.CategoryEntity;
-import ec.edu.ups.icc.events.categories.repositories.CategoryRepository;
-import ec.edu.ups.icc.events.core.exceptions.BadRequestException;
-import ec.edu.ups.icc.events.core.exceptions.BusinessRuleException;
-import ec.edu.ups.icc.events.core.exceptions.ResourceNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import ec.edu.ups.icc.events.categories.dtos.CategoryResponseDto;
+import ec.edu.ups.icc.events.categories.dtos.CreateCategoryDto;
+
 
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
-@Service
-@Transactional
-public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
-    public List<CategoryDTO> getAllCategories() {
-        return categoryRepository.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public CategoryDTO getCategoryById(Long id) {
-        return categoryRepository.findById(id)
-                .map(this::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + id));
-    }
-
-    public CategoryDTO createCategory(CategoryDTO dto) {
-        if (dto.name() == null || dto.name().isBlank()) {
-            throw new BadRequestException("El nombre de la categoría es obligatorio");
-        }
-
-        String normalizedName = dto.name().trim().toLowerCase(Locale.ROOT);
-        if (categoryRepository.existsByNameIgnoreCase(normalizedName)) {
-            throw new BusinessRuleException("La categoría ya existe");
-        }
-
-        CategoryEntity category = new CategoryEntity();
-        category.setName(normalizedName);
-        category.setDescription(dto.description());
-        return toDto(categoryRepository.save(category));
-    }
-
-    public CategoryDTO updateCategory(Long id, CategoryDTO dto) {
-        CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + id));
-
-        if (dto.name() != null && !dto.name().isBlank()) {
-            String normalizedName = dto.name().trim().toLowerCase(Locale.ROOT);
-            if (categoryRepository.existsByNameIgnoreCaseAndIdNot(normalizedName, id)) {
-                throw new BusinessRuleException("La categoría ya existe");
-            }
-            category.setName(normalizedName);
-        }
-        category.setDescription(dto.description());
-        return toDto(categoryRepository.save(category));
-    }
-
-    public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Categoría no encontrada con id: " + id);
-        }
-        categoryRepository.deleteById(id);
-    }
-
-    private CategoryDTO toDto(CategoryEntity entity) {
-        return new CategoryDTO(entity.getId(), entity.getName(), entity.getDescription());
-    }
+public interface CategoryService {
+    List<CategoryResponseDto> getAllCategories();
+    CategoryResponseDto getCategoryById(Long id);
+    CategoryResponseDto createCategory(CreateCategoryDto dto);
+    CategoryResponseDto updateCategory(Long id, CreateCategoryDto dto);
+    void deleteCategory(Long id);
 }
