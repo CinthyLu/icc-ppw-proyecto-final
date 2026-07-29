@@ -5,10 +5,11 @@ import ec.edu.ups.icc.events.core.exceptions.ResourceNotFoundException;
 import ec.edu.ups.icc.events.events.entities.EventEntity;
 import ec.edu.ups.icc.events.events.entities.EventStatus;
 import ec.edu.ups.icc.events.events.repositories.EventRepository;
-import ec.edu.ups.icc.events.registrations.dtos.RegistrationDTO;
+import ec.edu.ups.icc.events.registrations.dtos.RegistrationResponseDto;
 import ec.edu.ups.icc.events.registrations.entities.RegistrationEntity;
 import ec.edu.ups.icc.events.registrations.entities.RegistrationStatus;
 import ec.edu.ups.icc.events.registrations.repositories.RegistrationRepository;
+import ec.edu.ups.icc.events.registrations.services.RegistrationServiceImpl;
 import ec.edu.ups.icc.events.users.entities.UserEntity;
 import ec.edu.ups.icc.events.users.repositories.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -45,7 +46,7 @@ public class RegistrationServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private RegistrationService registrationService;
+    private RegistrationServiceImpl registrationService;
 
     private UserEntity userEntity;
     private EventEntity eventEntity;
@@ -74,7 +75,8 @@ public class RegistrationServiceTest {
     private void mockSecurityContext(String email) {
         SecurityContext securityContext = mock(SecurityContext.class);
         Authentication authentication = mock(Authentication.class);
-        User springUser = new User(email, "password", Collections.singletonList(new SimpleGrantedAuthority("ROLE_PARTICIPANT")));
+        User springUser = new User(email, "password",
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_PARTICIPANT")));
         when(authentication.getPrincipal()).thenReturn(springUser);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -85,7 +87,7 @@ public class RegistrationServiceTest {
         mockSecurityContext("student@ups.edu.ec");
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
         when(registrationRepository.findByUserIdAndEventId(1L, 10L)).thenReturn(Optional.empty());
 
         RegistrationEntity savedRegistration = new RegistrationEntity();
@@ -97,10 +99,10 @@ public class RegistrationServiceTest {
 
         when(registrationRepository.save(any(RegistrationEntity.class))).thenReturn(savedRegistration);
 
-        RegistrationDTO result = registrationService.registerUserToEvent(10L);
+        RegistrationResponseDto result = registrationService.registerUserToEvent(10L);
 
         assertNotNull(result);
-        assertEquals(RegistrationStatus.CONFIRMED, result.status());
+        assertEquals(RegistrationStatus.CONFIRMED, result.getStatus());
         assertEquals(9, eventEntity.getAvailableSeats());
         verify(eventRepository, times(1)).save(eventEntity);
         verify(registrationRepository, times(1)).save(any(RegistrationEntity.class));
@@ -111,7 +113,7 @@ public class RegistrationServiceTest {
         mockSecurityContext("student@ups.edu.ec");
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.empty());
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             registrationService.registerUserToEvent(10L);
@@ -124,7 +126,7 @@ public class RegistrationServiceTest {
         eventEntity.setStatus(EventStatus.DRAFT);
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
 
         assertThrows(BusinessRuleException.class, () -> {
             registrationService.registerUserToEvent(10L);
@@ -137,7 +139,7 @@ public class RegistrationServiceTest {
         eventEntity.setStartDate(LocalDateTime.now().minusDays(1));
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
 
         assertThrows(BusinessRuleException.class, () -> {
             registrationService.registerUserToEvent(10L);
@@ -150,7 +152,7 @@ public class RegistrationServiceTest {
         eventEntity.setAvailableSeats(0);
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
         when(registrationRepository.findByUserIdAndEventId(1L, 10L)).thenReturn(Optional.empty());
 
         assertThrows(BusinessRuleException.class, () -> {
@@ -168,7 +170,7 @@ public class RegistrationServiceTest {
         existingRegistration.setStatus(RegistrationStatus.CONFIRMED);
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
         when(registrationRepository.findByUserIdAndEventId(1L, 10L)).thenReturn(Optional.of(existingRegistration));
 
         assertThrows(BusinessRuleException.class, () -> {
@@ -187,7 +189,7 @@ public class RegistrationServiceTest {
         existingRegistration.setStatus(RegistrationStatus.CANCELLED);
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
         when(registrationRepository.findByUserIdAndEventId(1L, 10L)).thenReturn(Optional.of(existingRegistration));
 
         assertThrows(BusinessRuleException.class, () -> {
@@ -205,7 +207,7 @@ public class RegistrationServiceTest {
         eventEntity.setStartDate(LocalDateTime.now().plusDays(1));
 
         when(userRepository.findByEmail("student@ups.edu.ec")).thenReturn(Optional.of(userEntity));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(eventEntity));
+        when(eventRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(eventEntity));
 
         assertThrows(BusinessRuleException.class, () -> {
             registrationService.registerUserToEvent(10L);
@@ -226,10 +228,10 @@ public class RegistrationServiceTest {
         when(registrationRepository.findById(100L)).thenReturn(Optional.of(registration));
         when(registrationRepository.save(registration)).thenReturn(registration);
 
-        RegistrationDTO result = registrationService.cancelRegistration(100L);
+        RegistrationResponseDto result = registrationService.cancelRegistration(100L);
 
         assertNotNull(result);
-        assertEquals(RegistrationStatus.CANCELLED, result.status());
+        assertEquals(RegistrationStatus.CANCELLED, result.getStatus());
         assertEquals(11, eventEntity.getAvailableSeats());
         verify(eventRepository, times(1)).save(eventEntity);
         verify(registrationRepository, times(1)).save(registration);

@@ -34,19 +34,16 @@ class SecurityBeansConfigTest {
         assertTrue(encodedPassword.startsWith("$2"));
         assertTrue(passwordEncoder.matches(
                 rawPassword,
-                encodedPassword
-        ));
+                encodedPassword));
     }
 
     @Test
     void shouldRejectIncorrectPassword() {
-        String encodedPassword =
-                passwordEncoder.encode("ClaveCorrecta123!");
+        String encodedPassword = passwordEncoder.encode("ClaveCorrecta123!");
 
         assertFalse(passwordEncoder.matches(
                 "ClaveIncorrecta123!",
-                encodedPassword
-        ));
+                encodedPassword));
     }
 
     @Test
@@ -59,11 +56,9 @@ class SecurityBeansConfigTest {
         assertNotEquals(firstHash, secondHash);
         assertTrue(passwordEncoder.matches(
                 rawPassword,
-                firstHash
-        ));
+                firstHash));
         assertTrue(passwordEncoder.matches(
                 rawPassword,
-                secondHash
-        ));
+                secondHash));
     }
 }

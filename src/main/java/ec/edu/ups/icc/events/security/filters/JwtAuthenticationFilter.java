@@ -1,5 +1,6 @@
-package ec.edu.ups.icc.events.core.security;
+package ec.edu.ups.icc.events.security.filters;
 
+import ec.edu.ups.icc.events.security.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
