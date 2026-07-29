@@ -40,6 +40,10 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation("com.github.librepdf:openpdf:1.3.39")
+
     testAnnotationProcessor("org.projectlombok:lombok")
 }
 

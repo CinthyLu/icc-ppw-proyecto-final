@@ -8,13 +8,36 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RegistrationRepository extends JpaRepository<RegistrationEntity, Long>, JpaSpecificationExecutor<RegistrationEntity> {
+public interface RegistrationRepository
+        extends JpaRepository<RegistrationEntity, Long>,
+        JpaSpecificationExecutor<RegistrationEntity> {
+
     boolean existsByEventId(Long eventId);
-    Optional<RegistrationEntity> findByUserIdAndEventId(Long userId, Long eventId);
-    Page<RegistrationEntity> findByUserId(Long userId, Pageable pageable);
-    Page<RegistrationEntity> findByEventOrganizerId(Long organizerId, Pageable pageable);
-    Page<RegistrationEntity> findAll(Specification<RegistrationEntity> spec, Pageable pageable);
+
+    Optional<RegistrationEntity> findByUserIdAndEventId(
+            Long userId,
+            Long eventId
+    );
+
+    Page<RegistrationEntity> findByUserId(
+            Long userId,
+            Pageable pageable
+    );
+
+    Page<RegistrationEntity> findByEventOrganizerId(
+            Long organizerId,
+            Pageable pageable
+    );
+
+    Page<RegistrationEntity> findAll(
+            Specification<RegistrationEntity> spec,
+            Pageable pageable
+    );
+
+    List<RegistrationEntity>
+            findByEventIdOrderByRegistrationDateAsc(Long eventId);
 }
