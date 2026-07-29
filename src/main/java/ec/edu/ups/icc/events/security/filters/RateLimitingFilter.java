@@ -18,9 +18,11 @@ import java.time.Duration;
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final StringRedisTemplate redisTemplate;
+    private final ec.edu.ups.icc.events.security.config.RateLimitingProperties props;
 
-    public RateLimitingFilter(StringRedisTemplate redisTemplate) {
+    public RateLimitingFilter(StringRedisTemplate redisTemplate, ec.edu.ups.icc.events.security.config.RateLimitingProperties props) {
         this.redisTemplate = redisTemplate;
+        this.props = props;
     }
 
     @Override
@@ -42,26 +44,26 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         if (path.equals("/api/auth/login") || path.equals("/auth/login")) {
             String email = request.getParameter("username");
             key = "rate:login:" + ip + ":" + (email != null ? email.trim().toLowerCase() : "");
-            limit = 5;
-            duration = Duration.ofMinutes(1);
+            limit = props.getLoginLimit();
+            duration = Duration.ofSeconds(props.getLoginWindowSeconds());
         } else if (path.equals("/api/auth/register") || path.equals("/auth/register")) {
             key = "rate:register:" + ip;
-            limit = 3;
-            duration = Duration.ofHours(1);
+            limit = props.getRegisterLimit();
+            duration = Duration.ofSeconds(props.getRegisterWindowSeconds());
         } else if (path.startsWith("/api/reports/") || path.startsWith("/reports/")) {
             String user = getAuthenticatedUser();
             key = "rate:reports:" + user;
-            limit = 5;
-            duration = Duration.ofMinutes(1);
+            limit = props.getGeneralAuthLimit();
+            duration = Duration.ofSeconds(props.getGeneralWindowSeconds());
         } else if (isPublicEndpoint(path)) {
             key = "rate:public:" + ip;
-            limit = 60;
-            duration = Duration.ofMinutes(1);
+            limit = props.getGeneralAnonymousLimit();
+            duration = Duration.ofSeconds(props.getGeneralWindowSeconds());
         } else {
             String user = getAuthenticatedUser();
             key = "rate:auth:" + user;
-            limit = 120;
-            duration = Duration.ofMinutes(1);
+            limit = props.getGeneralAuthLimit();
+            duration = Duration.ofSeconds(props.getGeneralWindowSeconds());
         }
 
         Long currentRequests = redisTemplate.opsForValue().increment(key);

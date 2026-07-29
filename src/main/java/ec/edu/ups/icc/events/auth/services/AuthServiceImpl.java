@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final StringRedisTemplate redisTemplate;
+    private final ec.edu.ups.icc.events.security.config.RateLimitingProperties rateProps;
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -43,7 +44,8 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthenticationManager authenticationManager,
-            StringRedisTemplate redisTemplate
+            StringRedisTemplate redisTemplate,
+            ec.edu.ups.icc.events.security.config.RateLimitingProperties rateProps
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -51,6 +53,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.redisTemplate = redisTemplate;
+        this.rateProps = rateProps;
     }
 
     @Override
@@ -80,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         String blockKey = "blocked-user:" + ipAddress + ":" + email;
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(blockKey))) {
-            throw new RateLimitExceededException("Su usuario ha sido bloqueado temporalmente en esta dirección IP debido a múltiples intentos fallidos de inicio de sesión.");
+            throw new ec.edu.ups.icc.events.core.exceptions.AccountLockedException("Su usuario está bloqueado temporalmente en esta dirección IP debido a múltiples intentos fallidos de inicio de sesión.");
         }
 
         try {
@@ -101,10 +104,10 @@ public class AuthServiceImpl implements AuthService {
             String attemptsKey = "login:failed-attempts:" + ipAddress + ":" + email;
             Long attempts = redisTemplate.opsForValue().increment(attemptsKey);
             if (attempts != null && attempts == 1) {
-                redisTemplate.expire(attemptsKey, Duration.ofMinutes(10));
+                redisTemplate.expire(attemptsKey, Duration.ofSeconds(rateProps.getLoginWindowSeconds()));
             }
-            if (attempts != null && attempts >= 5) {
-                redisTemplate.opsForValue().set(blockKey, "true", Duration.ofMinutes(15));
+            if (attempts != null && attempts >= rateProps.getLoginFailedToBlock()) {
+                redisTemplate.opsForValue().set(blockKey, "true", Duration.ofMinutes(rateProps.getLoginBlockDurationMinutes()));
                 redisTemplate.delete(attemptsKey);
 
                 // Bloquear en base de datos si el usuario existe
@@ -113,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
                     userRepository.save(u);
                 });
 
-                throw new RateLimitExceededException("Usuario bloqueado temporalmente por 15 minutos debido a 5 intentos fallidos.");
+                throw new ec.edu.ups.icc.events.core.exceptions.AccountLockedException("Usuario bloqueado temporalmente por " + rateProps.getLoginBlockDurationMinutes() + " minutos debido a " + rateProps.getLoginFailedToBlock() + " intentos fallidos.");
             }
             throw new BadRequestException("Credenciales de inicio de sesión inválidas.");
         }

@@ -131,6 +131,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ec.edu.ups.icc.events.core.exceptions.AccountLockedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccountLocked(
+            ec.edu.ups.icc.events.core.exceptions.AccountLockedException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.LOCKED,
+                "ACCOUNT_LOCKED",
+                exception.getMessage(),
+                request
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
             Exception exception,
