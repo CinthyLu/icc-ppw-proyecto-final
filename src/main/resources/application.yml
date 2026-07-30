@@ -31,6 +31,9 @@ spring:
         jdbc:
           time_zone: UTC
 
+  flyway:
+    baseline-on-migrate: true
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
