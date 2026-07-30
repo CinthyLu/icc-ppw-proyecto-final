@@ -66,9 +66,10 @@ springdoc:
     operations-sorter: method
 
 swagger:
-  user: ${SWAGGER_USER:swagger}
-  password: ${SWAGGER_PASSWORD:change-me}
+   username: ${SWAGGER_USERNAME:admin}
+   password: ${SWAGGER_PASSWORD:adminpassword}
 
+    
 # Configuración de rate limiting y bloqueo por intentos fallidos
 rate-limiting:
   login:
