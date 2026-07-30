@@ -16,7 +16,7 @@ Backend desarrollado con **Java 17**, **Spring Boot 3.3.4**, **PostgreSQL** y **
 - **Backend desplegado en Render:** https://academic-events-api-h1kf.onrender.com
 - **Swagger UI:** https://academic-events-api-h1kf.onrender.com/api/swagger-ui/index.html#/
 - **Health Check:** https://academic-events-api-h1kf.onrender.com/api/actuator/health
-- **Video de presentación:** [Ver video](PEGAR_AQUI_EL_ENLACE_DEL_VIDEO)
+- **Video de presentación:** [Ver video](https://youtu.be/4mKnACQPmYs)
 
 ## Credenciales de evaluación
 
@@ -32,8 +32,8 @@ Contraseña: ups123
 ### Inicio de sesión con usuario administrador
 
 ```text
-Usuario: PENDIENTE_USUARIO_ADMIN
-Contraseña: PENDIENTE_CONTRASEÑA_ADMIN
+Usuario: admin@ups.edu.ec
+Contraseña: password123
 ```
 
 ### Inicio de sesión con usuario participante
