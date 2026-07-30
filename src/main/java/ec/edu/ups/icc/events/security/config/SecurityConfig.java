@@ -143,7 +143,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/auth/**",
                                 "/actuator/health",
                                 "/api/actuator/health",
                                 "/error"

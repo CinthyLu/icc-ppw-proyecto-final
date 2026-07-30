@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/registrations")
+@RequestMapping("/registrations")
 @Tag(name = "Inscripciones", description = "Módulo para la inscripción de participantes en eventos y control de cupos")
 public class RegistrationController {
 

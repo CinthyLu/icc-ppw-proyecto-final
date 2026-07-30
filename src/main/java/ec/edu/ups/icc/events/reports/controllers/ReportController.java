@@ -50,7 +50,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/reports/events/{eventId}/registrations.xlsx"
+            "/reports/events/{eventId}/registrations.xlsx"
     )
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     public ResponseEntity<byte[]> downloadEventRegistrationsExcel(
@@ -75,7 +75,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/reports/events/{eventId}/registrations.pdf"
+            "/reports/events/{eventId}/registrations.pdf"
     )
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     public ResponseEntity<byte[]> downloadEventRegistrationsPdf(
@@ -100,7 +100,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/registrations/{id}/certificate.pdf"
+            "/registrations/{id}/certificate.pdf"
     )
     @PreAuthorize("hasAnyRole('PARTICIPANT', 'ADMIN')")
     public ResponseEntity<byte[]> downloadRegistrationCertificate(
