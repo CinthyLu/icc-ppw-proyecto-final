@@ -42,6 +42,7 @@ Contraseña: PENDIENTE_CONTRASEÑA_ADMIN
 Usuario: domenica.demo@ups.edu.ec
 Contraseña: Demo12345!
 ```
+Las credenciales incluidas en este README corresponden únicamente a cuentas de demostración para la evaluación.
 
 El acceso Basic Auth de Swagger y el inicio de sesión de la API son autenticaciones diferentes.
 
@@ -151,16 +152,7 @@ También se utilizan variables de entorno para configurar:
 - Seguridad JWT.
 - Perfil activo de Spring.
 
-No se deben publicar en el repositorio:
 
-- Credenciales reales de PostgreSQL.
-- Credenciales de Redis.
-- Claves privadas JWT.
-- Tokens activos.
-- Contraseñas de infraestructura.
-- Variables privadas del servicio de Render.
-
-Las credenciales incluidas en este README corresponden únicamente a cuentas de demostración para la evaluación.
 
 ## Ejecución local
 

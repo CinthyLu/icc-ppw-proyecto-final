@@ -123,7 +123,7 @@ public class SecurityConfig {
         } else {
             http.authorizeHttpRequests(authorize -> authorize
                     .anyRequest().permitAll()
-            );
+            );  
         }
 
         return http.build();

@@ -1,8 +1,10 @@
 package ec.edu.ups.icc.events.core.exceptions;
 
-public class ForbiddenException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class ForbiddenException extends ApplicationException {
 
     public ForbiddenException(String message) {
-        super(message);
+        super(HttpStatus.FORBIDDEN, message);
     }
 }

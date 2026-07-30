@@ -5,9 +5,13 @@ import ec.edu.ups.icc.events.core.entities.BaseEntity;
 import ec.edu.ups.icc.events.users.entities.UserEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "events")
+@SQLDelete(sql = "UPDATE events SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class EventEntity extends BaseEntity {
 
     @Column(nullable = false, length = 200)

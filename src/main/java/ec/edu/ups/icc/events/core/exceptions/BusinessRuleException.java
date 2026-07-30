@@ -1,8 +1,10 @@
 package ec.edu.ups.icc.events.core.exceptions;
 
-public class BusinessRuleException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class BusinessRuleException extends ApplicationException {
 
     public BusinessRuleException(String message) {
-        super(message);
+        super(HttpStatus.CONFLICT, message);
     }
 }

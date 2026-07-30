@@ -99,8 +99,7 @@ public class EventServiceImpl implements EventService {
     public void deleteEvent(Long id) {
         EventEntity event = findEventById(id);
         verifyOwnership(event);
-        event.setStatus(EventStatus.CANCELLED);
-        eventRepository.save(event);
+        eventRepository.delete(event);
     }
 
     private EventEntity findEventById(Long id) {
