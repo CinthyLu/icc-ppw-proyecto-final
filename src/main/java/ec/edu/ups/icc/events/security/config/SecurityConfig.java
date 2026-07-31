@@ -2,6 +2,7 @@ package ec.edu.ups.icc.events.security.config;
 
 import ec.edu.ups.icc.events.security.filters.JwtAuthenticationFilter;
 import ec.edu.ups.icc.events.security.filters.RateLimitingFilter;
+import org.springframework.http.HttpMethod;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -148,11 +149,15 @@ public class SecurityConfig {
                                 "/api/actuator/health",
                                 "/error"
                         ).permitAll()
+                        
+                        .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
+                        
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                ) 
                 .addFilterBefore(
                         rateLimitingFilter,
                         UsernamePasswordAuthenticationFilter.class
