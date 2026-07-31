@@ -12,7 +12,6 @@ import ec.edu.ups.icc.events.core.exceptions.BadRequestException;
 import ec.edu.ups.icc.events.core.exceptions.ForbiddenException;
 import ec.edu.ups.icc.events.core.exceptions.ResourceNotFoundException;
 import ec.edu.ups.icc.events.security.services.JwtService;
-import ec.edu.ups.icc.events.core.exceptions.RateLimitExceededException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

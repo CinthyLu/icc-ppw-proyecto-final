@@ -16,7 +16,7 @@ Backend desarrollado con **Java 17**, **Spring Boot 3.3.4**, **PostgreSQL** y **
 - **Backend desplegado en Render:** https://academic-events-api-h1kf.onrender.com
 - **Swagger UI:** https://academic-events-api-h1kf.onrender.com/api/swagger-ui/index.html#/
 - **Health Check:** https://academic-events-api-h1kf.onrender.com/api/actuator/health
-- **Video de presentación:** [Ver video](PEGAR_AQUI_EL_ENLACE_DEL_VIDEO)
+- **Video de presentación:** [Ver video](https://www.youtube.com/watch?v=4mKnACQPmYs)
 
 ## Credenciales de evaluación
 
@@ -26,21 +26,21 @@ Backend desarrollado con **Java 17**, **Spring Boot 3.3.4**, **PostgreSQL** y **
 
 ```text
 Usuario: evaluador
-Contraseña: ups123
+
 ```
 
 ### Inicio de sesión con usuario administrador
 
 ```text
-Usuario: PENDIENTE_USUARIO_ADMIN
-Contraseña: PENDIENTE_CONTRASEÑA_ADMIN
+Usuario: admin@ups.edu.ec
+
 ```
 
 ### Inicio de sesión con usuario participante
 
 ```text
 Usuario: domenica.demo@ups.edu.ec
-Contraseña: Demo12345!
+
 ```
 
 El acceso Basic Auth de Swagger y el inicio de sesión de la API son autenticaciones diferentes.
@@ -75,22 +75,68 @@ El endpoint de login devuelve un token JWT, el cual debe colocarse en el botón 
 
 ## Arquitectura
 
-El proyecto utiliza una arquitectura monolítica modular organizada por dominios.
+El proyecto utiliza una arquitectura monolítica modular organizada por dominios para asegurar una alta cohesión y bajo acoplamiento.
 
-Cada módulo separa controladores, DTOs, mapeadores, repositorios, servicios e implementaciones.
+### Estructura de Módulos y Paquetes
 
 ```text
 src/main/java/ec/edu/ups/icc/events/
-├── audit/
-├── auth/
-├── categories/
-├── core/
-├── events/
-├── registrations/
-├── reports/
-├── security/
-├── sessions/
-└── users/
+├── audit/                    # Módulo de Auditoría (AOP)
+│   ├── annotations/          # @Auditable para marcar métodos a registrar
+│   ├── aspects/              # Aspectos que interceptan operaciones y registran bitácoras
+│   ├── entities/             # Entidad AuditLogEntity para persistencia en base de datos
+│   ├── repositories/         # Repositorio AuditLogRepository
+│   └── services/             # Servicios para manejo de bitácoras de auditoría
+├── auth/                     # Módulo de Autenticación de Usuarios y JWT
+│   ├── controllers/          # Controladores (registro, login, refresh, logout)
+│   ├── dtos/                 # DTOs de entrada y salida (LoginRequestDto, RegisterRequestDto)
+│   ├── mappers/              # Mapeadores de entidades y DTOs
+│   └── services/             # AuthService y AuthServiceImpl
+├── categories/               # Módulo de Categorías de Eventos
+│   ├── controllers/          # CategoryController
+│   ├── dtos/                 # CreateCategoryDto, CategoryResponseDto
+│   ├── entities/             # CategoryEntity
+│   ├── mappers/              # CategoryMapper
+│   ├── repositories/         # CategoryRepository
+│   └── services/             # CategoryService y CategoryServiceImpl
+├── core/                     # Capa transversal y Manejo Centralizado de Excepciones
+│   ├── dtos/                 # Formatos comunes de respuesta (ApiErrorResponse)
+│   ├── entities/             # BaseEntity
+│   ├── exceptions/           # Excepciones personalizadas y GlobalExceptionHandler (@RestControllerAdvice)
+│   └── security/             # OpenApiConfig (configuración de Swagger y seguridad JWT)
+├── events/                   # Módulo de Eventos Académicos
+│   ├── controllers/          # EventController (búsqueda, filtros, CRUD)
+│   ├── dtos/                 # DTOs de eventos (CreateEventDto, EventFilterDTO)
+│   ├── entities/             # EventEntity, EventModality (ONLINE, PRESENTIAL, HYBRID), EventStatus
+│   ├── mappers/              # EventMapper
+│   ├── repositories/         # EventRepository (búsqueda pesimista e índices)
+│   └── services/             # EventService y EventServiceImpl
+├── registrations/            # Módulo de Inscripciones y Control Transaccional de Cupos
+│   ├── controllers/          # RegistrationController (inscripción, cancelación, consultas)
+│   ├── dtos/                 # DTOs de inscripciones (RegistrationResponseDto)
+│   ├── entities/             # RegistrationEntity, RegistrationStatus (CONFIRMED, CANCELLED)
+│   ├── mappers/              # RegistrationMapper
+│   ├── repositories/         # RegistrationRepository
+│   └── services/             # RegistrationService y RegistrationServiceImpl
+├── reports/                  # Módulo de Reportes Descargables en Memoria
+│   ├── controllers/          # ReportController (Excel, PDF y certificados)
+│   ├── services/             # ExcelReportService, PdfReportService y ReportAccessService
+│   └── utils/                # ReportDateTimeUtils (zona horaria America/Guayaquil)
+├── security/                 # Seguridad de la API, Filtros y Rate Limiting
+│   ├── config/               # SecurityConfig, SecurityBeansConfig, RateLimitingProperties
+│   ├── filters/              # JwtAuthenticationFilter (validación de tokens), RateLimitingFilter (Redis)
+│   └── services/             # JwtService (generación, validación y expiración)
+├── sessions/                 # Módulo de Sesiones y Cronogramas de Eventos
+│   ├── controllers/          # SessionController (sesiones por evento)
+│   ├── dtos/                 # CreateSessionDto, SessionResponseDto
+│   ├── entities/             # SessionEntity
+│   ├── mappers/              # SessionMapper
+│   ├── repositories/         # SessionRepository
+│   └── services/             # SessionService y SessionServiceImpl
+└── users/                    # Módulo de Usuarios y Roles
+    ├── entities/             # UserEntity, RoleEntity (Roles ADMIN, ORGANIZER, PARTICIPANT)
+    ├── repositories/         # UserRepository, RoleRepository
+    └── services/             # CustomUserDetailsService (cargado de roles por Spring Security)
 ```
 
 Los servicios se definen mediante interfaces y clases `*ServiceImpl`, reduciendo el acoplamiento y facilitando las pruebas y el mantenimiento del sistema.
@@ -120,16 +166,41 @@ El siguiente diagrama fue generado a partir del esquema PostgreSQL del proyecto:
 
 ![Diagrama entidad-relación](./docs/database/diagrama-er.png)
 
-Entidades principales:
+### Entidades y Tablas Principales:
 
-- `users`
-- `roles`
-- `user_roles`
-- `categories`
-- `events`
-- `sessions`
-- `registrations`
-- `audit_logs`
+* `users`: Almacena la información de los usuarios registrados (nombre, correo institucional, contraseña cifrada con BCrypt, estado habilitado/bloqueado, fechas de creación/actualización).
+* `roles`: Registra los roles del sistema (`ROLE_ADMIN`, `ROLE_ORGANIZER`, `ROLE_PARTICIPANT`).
+* `user_roles`: Tabla intermedia de relación muchos a muchos entre usuarios y roles.
+* `categories`: Categorías temáticas de los eventos (ej. Inteligencia Artificial, Ciberseguridad, Desarrollo de Software).
+* `events`: Datos principales de los eventos académicos (título, descripción, modalidad ONLINE/PRESENTIAL/HYBRID, ubicación, cupo inicial, asientos disponibles, fechas de inicio y fin, estado DRAFT/PUBLISHED/CANCELLED/FINISHED, categoría y organizador).
+* `sessions`: Sesiones o conferencias individuales programadas dentro de un evento específico (título, descripción, horarios, salón).
+* `registrations`: Registro de las inscripciones de los participantes en los eventos con su estado (CONFIRMED/CANCELLED) y fecha de inscripción. Posee restricción única de par (user_id, event_id).
+* `audit_logs`: Registros de auditoría automáticos de operaciones del sistema (usuario ejecutor, acción realizada, recurso, identificador, dirección IP, User-Agent, detalles, fecha).
+
+---
+
+## Reporte de Actividades Desarrolladas por Rubro
+
+A continuación se detalla punto por punto el estado de cumplimiento de los requisitos obligatorios especificados en la rúbrica del proyecto integrador:
+
+1. **Arquitectura general**: Cumplido. La API cuenta con una arquitectura monolítica modular organizada por dominio. Cada paquete separa controladores, DTOs, mapeadores, repositorios, entidades, servicios e implementaciones.
+2. **Modelo de datos**: Cumplido. Se definen las entidades correspondientes al script SQL y se configura Hibernate con `ddl-auto=validate` para validar la correspondencia sin modificar la base de datos de producción.
+3. **Roles y permisos**: Cumplido. Se implementaron los roles `ADMIN`, `ORGANIZER` y `PARTICIPANT`. La pertenencia de eventos se valida en `EventServiceImpl` y la propiedad de reportes/certificados en `ReportAccessServiceImpl`.
+4. **Flujo funcional**: Cumplido. Se implementan los flujos CRUD mínimos de cada módulo.
+5. **Autenticación y autorización**: Cumplido. Contraseñas cifradas con BCrypt, renovación mediante Refresh Token, cierre de sesión con invalidación en Redis mediante blacklist, y protección con `@PreAuthorize`.
+6. **Redis y rate limiting**: Cumplido. Se implementaron contadores atómicos para límites por IP/usuario, bloqueos temporales por intentos fallidos de login y lista negra de tokens en Redis.
+7. **Límites de solicitudes**: Cumplido. El filtro intercepta peticiones retornando `429 Too Many Requests` y cabeceras `Retry-After`.
+8. **CORS restringido**: Cumplido. Lee el origen desde variables de entorno, restringe métodos a `GET, POST, PUT, PATCH, DELETE, OPTIONS` y restringe cabeceras.
+9. **Reglas de negocio y transacciones**: Cumplido. Validación de duplicados, fechas y cupos. El control de concurrencia para evitar la sobreventa de asientos se realiza utilizando bloqueo pesimista (`SELECT FOR UPDATE`). Se aplica soft-delete a los eventos publicados.
+10. **Manejo centralizado de excepciones**: Cumplido. Implementa `@RestControllerAdvice` retornando respuestas de error estructuradas (`ApiErrorResponse`) con desglose de validaciones por campo.
+11. **Swagger y OpenAPI protegidos**: Cumplido. Swagger UI está documentado completamente y se encuentra protegido en producción (`prod`) bajo autenticación básica (Basic Auth), mientras que en desarrollo es público.
+12. **Actuator y observabilidad**: Cumplido. Expone únicamente `/actuator/health` ocultando detalles internos.
+13. **Reportes y descargas**: Cumplido. Exporta en memoria la lista de inscritos a Excel (Apache POI) y PDF (OpenPDF), además de generar certificados en PDF con código de verificación.
+15. **Despliegue**: Cumplido. Desplegado en contenedores Docker y configurado en Render usando `render.yaml` y optimizaciones de memoria para la JVM.
+16. **Variables de entorno**: Cumplido. Toda la información sensible y de conexión a bases de datos se encuentra parametrizada mediante variables de entorno.
+17. **Zona Horaria**: Cumplido. Persistencia de instantes en base de datos en UTC y conversión al huso horario de negocio (`America/Guayaquil`) para visualización y reportes.
+
+---
 
 ## Configuración
 

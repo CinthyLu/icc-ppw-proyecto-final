@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Tag(name = "Autenticación", description = "Endpoints para registro, login, refresh token y logout de usuarios")
 public class AuthController {
 

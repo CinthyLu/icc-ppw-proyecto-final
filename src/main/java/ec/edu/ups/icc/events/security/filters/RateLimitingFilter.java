@@ -50,11 +50,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             key = "rate:register:" + ip;
             limit = props.getRegisterLimit();
             duration = Duration.ofSeconds(props.getRegisterWindowSeconds());
-        } else if (path.startsWith("/api/reports/") || path.startsWith("/reports/")) {
+        } else if (isReportOrCertificateEndpoint(path)) {
             String user = getAuthenticatedUser();
             key = "rate:reports:" + user;
-            limit = props.getGeneralAuthLimit();
-            duration = Duration.ofSeconds(props.getGeneralWindowSeconds());
+            limit = props.getReportsLimit();
+            duration = Duration.ofSeconds(props.getReportsWindowSeconds());
         } else if (isPublicEndpoint(path)) {
             key = "rate:public:" + ip;
             limit = props.getGeneralAnonymousLimit();
@@ -101,5 +101,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return path.equals("/api/auth/login") || path.equals("/api/auth/register") || path.equals("/api/auth/refresh")
                 || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/api/swagger-ui")
                 || path.startsWith("/api/v3/api-docs") || path.equals("/actuator/health") || path.equals("/api/actuator/health");
+    }
+
+       private boolean isReportOrCertificateEndpoint(String path) {
+        return path.startsWith("/api/reports/") || path.startsWith("/reports/")
+                || (path.startsWith("/registrations/") && path.endsWith("/certificate.pdf"))
+                || (path.startsWith("/api/registrations/") && path.endsWith("/certificate.pdf"));
     }
 }

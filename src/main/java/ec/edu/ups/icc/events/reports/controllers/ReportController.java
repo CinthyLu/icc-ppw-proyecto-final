@@ -1,14 +1,18 @@
 package ec.edu.ups.icc.events.reports.controllers;
 
+import ec.edu.ups.icc.events.reports.dtos.SystemStatisticsDto;
 import ec.edu.ups.icc.events.reports.services.ExcelReportService;
 import ec.edu.ups.icc.events.reports.services.PdfReportService;
 import ec.edu.ups.icc.events.reports.services.ReportAccessService;
+import ec.edu.ups.icc.events.reports.services.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,9 +20,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @RestController
 @Tag(name = "Reportes", description = "Descarga de reportes en Excel y PDF")
@@ -33,15 +39,18 @@ public class ReportController {
     private final ExcelReportService excelReportService;
     private final PdfReportService pdfReportService;
     private final ReportAccessService reportAccessService;
+    private final StatisticsService statisticsService;
 
     public ReportController(
             ExcelReportService excelReportService,
             PdfReportService pdfReportService,
-            ReportAccessService reportAccessService
+            ReportAccessService reportAccessService,
+            StatisticsService statisticsService
     ) {
         this.excelReportService = excelReportService;
         this.pdfReportService = pdfReportService;
         this.reportAccessService = reportAccessService;
+        this.statisticsService = statisticsService;
     }
 
     @Operation(summary = "Descargar reporte Excel de inscripciones", description = "Genera un archivo Excel con las inscripciones del evento indicado.", security = @SecurityRequirement(name = "bearerAuth"), responses = {
@@ -50,7 +59,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/reports/events/{eventId}/registrations.xlsx"
+            "/reports/events/{eventId}/registrations.xlsx"
     )
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     public ResponseEntity<byte[]> downloadEventRegistrationsExcel(
@@ -75,7 +84,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/reports/events/{eventId}/registrations.pdf"
+            "/reports/events/{eventId}/registrations.pdf"
     )
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     public ResponseEntity<byte[]> downloadEventRegistrationsPdf(
@@ -100,7 +109,7 @@ public class ReportController {
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
     @GetMapping(
-            "/api/registrations/{id}/certificate.pdf"
+            "/registrations/{id}/certificate.pdf"
     )
     @PreAuthorize("hasAnyRole('PARTICIPANT', 'ADMIN')")
     public ResponseEntity<byte[]> downloadRegistrationCertificate(
@@ -143,5 +152,19 @@ public class ReportController {
                         contentDisposition
                 )
                 .body(content);
+    }
+
+
+ @Operation(summary = "Obtener estadísticas globales del sistema", description = "Retorna indicadores del sistema con filtros de fechas opcionales.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/reports/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SystemStatisticsDto> getSystemStatistics(
+            @Parameter(description = "Fecha de inicio (ISO DATE_TIME)")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @Parameter(description = "Fecha de fin (ISO DATE_TIME)")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        SystemStatisticsDto stats = statisticsService.getSystemStatistics(startDate, endDate);
+        return ResponseEntity.ok(stats);
     }
 }

@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api")
 @Tag(name = "Sesiones", description = "Módulo de gestión de sesiones y conferencias por cada evento")
 public class SessionController {
 

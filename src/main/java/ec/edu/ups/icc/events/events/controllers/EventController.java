@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/events")
 @Tag(name = "Eventos", description = "Módulo de gestión de eventos académicos, conferencias y congresos")
 public class EventController {
 
@@ -62,7 +62,7 @@ public class EventController {
     @Operation(summary = "Crear nuevo evento", description = "Crea un nuevo evento académico. (Solo administradores y organizadores autorizados).", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<EventResponseDto> createEvent(@Valid @RequestBody CreateEventDto dto) {
         EventResponseDto created = eventService.createEvent(dto);
-        return ResponseEntity.created(URI.create("/api/events/" + created.getId())).body(created);
+        return ResponseEntity.created(URI.create("/events/" + created.getId())).body(created);
     }
 
     @PutMapping("/{id}")

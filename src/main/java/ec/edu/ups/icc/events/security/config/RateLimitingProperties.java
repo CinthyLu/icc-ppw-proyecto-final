@@ -18,6 +18,9 @@ public class RateLimitingProperties {
     private final long generalAuthLimit;
     private final long generalWindowSeconds;
 
+    private final long reportsLimit;
+    private final long reportsWindowSeconds;
+
     public RateLimitingProperties(Environment env) {
         this.loginLimit = Long.parseLong(env.getProperty("rate-limiting.login.limit", "5"));
         this.loginWindowSeconds = Long.parseLong(env.getProperty("rate-limiting.login.window-seconds", "60"));
@@ -30,6 +33,9 @@ public class RateLimitingProperties {
         this.generalAnonymousLimit = Long.parseLong(env.getProperty("rate-limiting.general.anonymous-limit", "60"));
         this.generalAuthLimit = Long.parseLong(env.getProperty("rate-limiting.general.auth-limit", "120"));
         this.generalWindowSeconds = Long.parseLong(env.getProperty("rate-limiting.general.window-seconds", "60"));
+       
+        this.reportsLimit = Long.parseLong(env.getProperty("rate-limiting.reports.limit", "5"));
+        this.reportsWindowSeconds = Long.parseLong(env.getProperty("rate-limiting.reports.window-seconds", "60"));
     }
 
     public long getLoginLimit() { return loginLimit; }
@@ -43,4 +49,9 @@ public class RateLimitingProperties {
     public long getGeneralAnonymousLimit() { return generalAnonymousLimit; }
     public long getGeneralAuthLimit() { return generalAuthLimit; }
     public long getGeneralWindowSeconds() { return generalWindowSeconds; }
+    
+    public long getReportsLimit() { return reportsLimit; }
+    public long getReportsWindowSeconds() { return reportsWindowSeconds; }
+
+
 }

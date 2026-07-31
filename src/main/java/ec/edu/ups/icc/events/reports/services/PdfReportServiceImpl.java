@@ -164,7 +164,7 @@ public class PdfReportServiceImpl implements PdfReportService {
             );
 
             Paragraph introduction = new Paragraph(
-                    "La Universidad Politécnica Salesiana certificar que la siguiente persona se encuentra registrada en el evento académico detallado a continuación.",
+                    "La Universidad Politécnica Salesiana certifica que la siguiente persona se encuentra registrada en el evento académico detallado a continuación.",
                     bodyFont()
             );
 

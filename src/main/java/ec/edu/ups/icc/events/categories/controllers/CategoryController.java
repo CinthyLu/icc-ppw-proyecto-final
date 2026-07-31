@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 @Tag(name = "Categorías", description = "Módulo de gestión de categorías para clasificar eventos")
 public class CategoryController {
 
@@ -51,8 +51,7 @@ public class CategoryController {
     @Operation(summary = "Actualizar categoría por ID", description = "Actualiza los campos de una categoría existente. (Solo administradores).", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable Long id,
-            @Valid @RequestBody CreateCategoryDto dto
-    ) {
+            @Valid @RequestBody CreateCategoryDto dto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, dto));
     }
 

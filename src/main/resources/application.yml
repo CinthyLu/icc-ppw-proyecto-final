@@ -17,7 +17,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 #hackiari 5 conexiones 
     hikari:
-    maximum-pool-size: ${DB_POOL_SIZE:5}
+      maximum-pool-size: ${DB_POOL_SIZE:5}
 
   jpa:
     open-in-view: false
@@ -80,3 +80,6 @@ rate-limiting:
     anonymous-limit: ${RATE_LIMIT_PUBLIC_LIMIT:60}
     auth-limit: ${RATE_LIMIT_AUTH_LIMIT:120}
     window-seconds: ${RATE_LIMIT_GENERAL_WINDOW_SECONDS:60}
+  reports:
+    limit: ${RATE_LIMIT_REPORTS_LIMIT:5}
+    window-seconds: ${RATE_LIMIT_REPORTS_WINDOW_SECONDS:60}

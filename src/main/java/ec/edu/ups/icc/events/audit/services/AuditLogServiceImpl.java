@@ -2,7 +2,6 @@ package ec.edu.ups.icc.events.audit.services;
 
 import ec.edu.ups.icc.events.audit.entities.AuditLogEntity;
 import ec.edu.ups.icc.events.audit.repositories.AuditLogRepository;
-import ec.edu.ups.icc.events.audit.services.AuditLogService;
 import ec.edu.ups.icc.events.users.entities.UserEntity;
 import ec.edu.ups.icc.events.users.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;

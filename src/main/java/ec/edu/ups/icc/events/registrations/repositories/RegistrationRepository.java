@@ -40,4 +40,15 @@ public interface RegistrationRepository
 
     List<RegistrationEntity>
             findByEventIdOrderByRegistrationDateAsc(Long eventId);
-}
+
+
+    long countByRegistrationDateBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
+    long countByStatusAndRegistrationDateBetween(
+            ec.edu.ups.icc.events.registrations.entities.RegistrationStatus status,
+            java.time.LocalDateTime start,
+            java.time.LocalDateTime end
+    );
+
+
+        }

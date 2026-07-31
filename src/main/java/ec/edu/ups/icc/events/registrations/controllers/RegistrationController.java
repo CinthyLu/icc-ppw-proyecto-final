@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/registrations")
+@RequestMapping("/registrations")
 @Tag(name = "Inscripciones", description = "Módulo para la inscripción de participantes en eventos y control de cupos")
 public class RegistrationController {
 
@@ -31,8 +31,7 @@ public class RegistrationController {
             @RequestParam(required = false) Long eventId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false, defaultValue = "registrationDate") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortDir
-    ) {
+            @RequestParam(required = false, defaultValue = "desc") String sortDir) {
         return ResponseEntity.ok(registrationService.getRegistrations(page, size, eventId, status, sortBy, sortDir));
     }
 

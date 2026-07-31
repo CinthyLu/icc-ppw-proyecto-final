@@ -553,6 +553,126 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "5. Reportes y Estadísticas (Reports & Stats)",
+			"item": [
+				{
+					"name": "Descargar PDF de Inscripciones del Evento",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/events/1/registrations.pdf",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"events",
+								"1",
+								"registrations.pdf"
+							]
+						},
+						"description": "Genera y descarga el reporte de inscripciones de un evento en formato PDF. Requiere rol ADMIN u ORGANIZER (propietario)."
+					},
+					"response": []
+				},
+				{
+					"name": "Descargar Excel de Inscripciones del Evento",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/events/1/registrations.xlsx",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"events",
+								"1",
+								"registrations.xlsx"
+							]
+						},
+						"description": "Genera y descarga el reporte de inscripciones de un evento en formato Excel. Requiere rol ADMIN u ORGANIZER (propietario)."
+					},
+					"response": []
+				},
+				{
+					"name": "Descargar Certificado PDF de Inscripción",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/registrations/1/certificate.pdf",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"registrations",
+								"1",
+								"certificate.pdf"
+							]
+						},
+						"description": "Genera y descarga el certificado PDF de una inscripción específica. Requiere ser el participante propietario o tener rol ADMIN."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Estadísticas Globales del Sistema",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/statistics?startDate=2026-01-01T00:00:00Z&endDate=2026-12-31T23:59:59Z",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2026-01-01T00:00:00Z"
+								},
+								{
+									"key": "endDate",
+									"value": "2026-12-31T23:59:59Z"
+								}
+							]
+						},
+						"description": "Obtiene estadísticas generales de eventos e inscripciones registradas dentro del rango de fechas especificado. Requiere rol ADMIN."
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -578,7 +698,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "https://academic-events-api-h1kf.onrender.com/api",
+			"value": "http://localhost:8080/api",
 			"type": "string"
 		},
 		{
