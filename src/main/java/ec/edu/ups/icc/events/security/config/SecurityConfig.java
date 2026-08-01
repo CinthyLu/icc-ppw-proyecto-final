@@ -98,28 +98,12 @@ public class SecurityConfig {
             swaggerProvider.setUserDetailsService(swaggerUsers);
             swaggerProvider.setPasswordEncoder(passwordEncoder);
 
-            AuthenticationEntryPoint swaggerEntryPoint =
-                    (request, response, exception) -> {
-                        response.setStatus(
-                                HttpServletResponse.SC_UNAUTHORIZED
-                        );
-                        response.setHeader(
-                                HttpHeaders.WWW_AUTHENTICATE,
-                                "Basic realm=\"Swagger Docs\""
-                        );
-                    };
-
             http
                     .authenticationProvider(swaggerProvider)
                     .authorizeHttpRequests(authorize -> authorize
                             .anyRequest().authenticated()
                     )
-                    .exceptionHandling(exceptions -> exceptions
-                            .authenticationEntryPoint(swaggerEntryPoint)
-                    )
-                    .httpBasic(httpBasic -> httpBasic
-                            .authenticationEntryPoint(swaggerEntryPoint)
-                    );
+                    .httpBasic(httpBasic -> httpBasic.realmName("Swagger Docs"));
 
         } else {
             http.authorizeHttpRequests(authorize -> authorize
@@ -144,14 +128,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/auth/**",
                                 "/actuator/health",
-                                "/api/actuator/health",
                                 "/error"
                         ).permitAll()
                         
-                        .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/events", "/events/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/categories", "/categories/**").permitAll()
                         
                         .anyRequest().authenticated()
                 )

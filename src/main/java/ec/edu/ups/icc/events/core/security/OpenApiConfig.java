@@ -26,7 +26,6 @@ public class OpenApiConfig {
                         .description("API REST para gestión de eventos académicos, categorías, sesiones, inscripciones y reportes.")
                         .license(new License().name("Apache 2.0")))
                 .servers(List.of(new Server().url("/api")))
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
                                 new SecurityScheme()

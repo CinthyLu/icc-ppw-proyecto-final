@@ -61,4 +61,5 @@ class SecurityBeansConfigTest {
                 rawPassword,
                 secondHash));
     }
-}
+
+    }
